@@ -82,12 +82,23 @@ describe('Collection test', function () {
 		before(function (done) {
 			cursor = mongo.collection('beverages').find();
 			cursor.on('data', function (doc) {
-				matchcollection.push(doc);
+				if(doc) {
+					matchcollection.push(doc);
+				}
 			});
 			cursor.on('end', done);
 		});
 		it('should stream all beverages collection', function () {
 			matchcollection.should.have.length(3);
+		});
+	});
+
+	describe('when getting one item of collection by some find criteria', function () {
+		it('#should return all collection', function (done) {
+			mongo.collection('beverages').findOne({name: 'CocaCola'}, function (err, data) {
+				data.should.be.eql({name: 'CocaCola', price: 15});
+				done();
+			});
 		});
 	});
 });

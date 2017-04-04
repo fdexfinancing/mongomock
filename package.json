@@ -6,7 +6,8 @@
   },
   "version": "0.1.2",
   "dependencies": {
-    "bson": "*"
+    "bson": "*",
+    "es6-promise": "^4.1.0"
   },
   "devDependencies": {
     "jshint": "*",

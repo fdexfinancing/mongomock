@@ -1,5 +1,7 @@
 var _ = require('./util');
 var Cursor = require('./Cursor');
+var Promise = require('es6-promise').Promise;
+
 function noop() {
 }
 
@@ -30,7 +32,21 @@ Collection.prototype.save = function (doc, options, callback) {
 	}
 };
 
-Collection.prototype.findOne = function (query, callback) {
+Collection.prototype.findOne = function(query, callback) {
+	var self = this;
+	// Execute using callback
+
+	if(callback && typeof callback === 'function') {
+		return findOne.call(this, query, callback);
+	}
+
+	// Return a Promise
+	return new Promise(function (resolve) {
+		resolve(_(self._data).findOne(query));
+	});
+};
+
+var findOne = function (query, callback) {
 	callback(null, _(this._data).findOne(query));
 };
 
