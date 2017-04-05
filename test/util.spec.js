@@ -190,6 +190,7 @@ describe('mongo-query utility belt test', function () {
 
 		describe('#when its found and return modified object', function () {
 			var beverage = _(db.beverages).findAndModify({name: 'CocaCola'}, {$set: {price: 199}}, {new: true});
+
 			it('#should return new object', function () {
 				beverage.should.have.property('price').equal(199);
 			});
@@ -197,6 +198,7 @@ describe('mongo-query utility belt test', function () {
 
 		describe('#when its found and return non modified object', function () {
 			var beverage = _(db.beverages).findAndModify({name: 'MongoCola'}, {$set: {price: 199}});
+
 			it('#should return new object', function () {
 				beverage.should.have.property('price').equal(10);
 			});

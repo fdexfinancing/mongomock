@@ -92,13 +92,92 @@ describe('Collection test', function () {
 			matchcollection.should.have.length(3);
 		});
 	});
+});
 
-	describe('when getting one item of collection by some find criteria', function () {
-		it('#should return all collection', function (done) {
-			mongo.collection('beverages').findOne({name: 'CocaCola'}, function (err, data) {
-				data.should.be.eql({name: 'CocaCola', price: 15});
-				done();
-			});
+describe('Verify with callback is working after promises', function () {
+	var mongo;
+
+	before(function () {
+		var db = {
+			fruits: [
+				{name: 'Banana', price: 20},
+				{name: 'Apple', price: 10, tags: ['Africa', 'Turkey']},
+				{name: 'Orange', price: 25},
+				{name: 'Pineapple', price: 20}
+			],
+			beverages: [
+				{name: 'CocaCola', price: 15},
+				{name: 'MongoCola', price: 10},
+				{name: 'Pepsi', price: 25}
+			]
+		};
+
+		mongo = new MongoMock(db);
+	});
+
+	it('#should return collection by key', function (done) {
+		mongo.collection('beverages').findOne({name: 'CocaCola'}, function (err, data) {
+			data.should.be.eql({name: 'CocaCola', price: 15});
+			done();
+		});
+	});
+
+	it('#should update collection item', function (done) {
+		mongo.collection('beverages').update({name: 'CocaCola'}, {$set: {price: 20}}, function (err, data) {
+			data.should.be.eql(1);
+
+			mongo.collection('beverages')._mutableData.should.be.eql([
+				{name: 'CocaCola', price: 20},
+				{name: 'MongoCola', price: 10},
+				{name: 'Pepsi', price: 25}
+			]);
+
+			done();
+		});
+	});
+
+	it('#should insert collection item', function (done) {
+		mongo.collection('beverages').insert({name: 'Soda', price: 23}, function (err, data) {
+			data.should.have.property('_id');
+			data.should.have.property('name');
+			data.should.have.property('price');
+			data.name.should.be.eql('Soda');
+			data.price.should.be.eql(23);
+
+			mongo.collection('beverages')._data.should.have.length(4);
+
+			done();
+		});
+	});
+
+	it('#should remove collection item', function (done) {
+		mongo.collection('beverages').remove({name: 'Soda'}, function () {
+
+			mongo.collection('beverages')._data.should.have.length(3);
+
+			done();
+		});
+	});
+
+
+	it('#should find and modify collection item and return new value', function (done) {
+		mongo.collection('beverages').findAndModify({name: 'MongoCola'}, {}, {$set: {price: 99}}, {new: true}, function (err, data) {
+			data.should.be.eql({name: 'MongoCola', price: 99});
+
+			done();
+		});
+	});
+
+
+	it('#should save collection item', function (done) {
+		mongo.collection('beverages').save({name: 'NewCola', price: 11}, function (err, data) {
+			data.should.have.property('_id');
+			data.should.have.property('name');
+			data.should.have.property('price');
+			data.name.should.be.eql('NewCola');
+			data.price.should.be.eql(11);
+
+			done();
 		});
 	});
 });

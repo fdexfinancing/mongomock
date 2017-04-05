@@ -25,11 +25,24 @@ Collection.prototype.save = function (doc, options, callback) {
 	if (!callback) {
 		callback = options;
 	}
+
+
 	if (doc._id) {
-		this.update({_id: doc._id}, doc, { upsert: true }, callback);
+		if (callback && typeof callback === 'function') {
+			this.update({_id: doc._id}, doc, {upsert: true}, callback);
+		}
+		else {
+			return this.update({_id: doc._id}, doc, {upsert: true});
+		}
 	} else {
-		this.insert(doc, callback);
+		if (callback && typeof callback === 'function') {
+			this.insert(doc, callback);
+		}
+		else {
+			return this.insert(doc);
+		}
 	}
+
 };
 
 Collection.prototype.findOne = function(query, callback) {
@@ -73,6 +86,8 @@ Collection.prototype.toArray = function (callback) {
 };
 
 Collection.prototype.insert = function (doc, options, callback) {
+	var self = this;
+
 	if ('function' === typeof options) {
 		callback = options, options = {};
 	}
@@ -81,46 +96,90 @@ Collection.prototype.insert = function (doc, options, callback) {
 		options = {};
 	}
 
-	if ('function' !== typeof callback) {
-		callback = null;
+	if(callback && typeof callback === 'function') {
+		return insert.call(this, doc, options, callback);
 	}
 
+	return new Promise(function (resolve) {
+		var counter = _(self._data).insert(doc);
+		self._restore();
+
+		resolve(counter);
+	});
+};
+
+var insert = function (doc, options, callback) {
 	_(this._data).insert(doc);
 	this._restore();
 	callback(null, doc);
 };
 
+
 Collection.prototype.update = function (query, modifier, options, callback) {
+	var self = this;
+
 	if ('function' === typeof options) {
 		callback = options, options = {};
 	}
 
 	if (options === null) {
 		options = {};
-	}
-
-	if ('function' !== typeof callback) {
-		callback = null;
 	}
 
 	if (modifier.$set && modifier.$set._id) {
 		delete modifier.$set._id;
 	}
 
+	if(callback && typeof callback === 'function') {
+		return update.call(this, query, modifier, options, callback);
+	}
+
+	return new Promise(function (resolve) {
+		var counter = _(self._data).update(query, modifier, options);
+		self._restore();
+
+		resolve(counter);
+	});
+};
+
+
+var update = function (query, modifier, options, callback) {
 	var counter = _(this._data).update(query, modifier, options);
 	this._restore();
 
 	callback(null, counter);
 };
 
+
 Collection.prototype.remove = function (query, callback) {
+	var self = this;
+
+	if(callback && typeof callback === 'function') {
+		return remove.call(this, query, callback);
+	}
+
 	callback = callback || noop;
+	_(this._data).remove(query);
+	this._restore();
+	callback();
+
+	return new Promise(function (resolve) {
+		_(self._data).remove(query);
+		self._restore();
+
+		resolve();
+	});
+};
+
+var remove = function (query, callback) {
 	_(this._data).remove(query);
 	this._restore();
 	callback();
 };
 
 Collection.prototype.findAndModify = function (query, sort, modifier, options, callback) {
+	var self = this;
+
 	if ('function' === typeof options) {
 		callback = options, options = {};
 	}
@@ -129,14 +188,23 @@ Collection.prototype.findAndModify = function (query, sort, modifier, options, c
 		options = {};
 	}
 
-	if ('function' !== typeof callback) {
-		callback = null;
-	}
-
 	if (modifier.$set && modifier.$set._id) {
 		delete modifier.$set._id;
 	}
 
+	if(callback && typeof callback === 'function') {
+		return findAndModify.call(this, query, modifier, options, callback);
+	}
+
+	return new Promise(function (resolve) {
+		var doc = _(self._data).findAndModify(query, modifier, options);
+		self._restore();
+
+		resolve(doc);
+	});
+};
+
+var findAndModify = function (query, modifier, options, callback) {
 	var doc = _(this._data).findAndModify(query, modifier, options);
 	this._restore();
 	callback(null, doc);
