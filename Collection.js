@@ -1,6 +1,7 @@
 var _ = require('./util');
 var Cursor = require('./Cursor');
 var Promise = require('es6-promise').Promise;
+var err = null;
 
 function noop() {
 }
@@ -54,7 +55,11 @@ Collection.prototype.findOne = function(query, callback) {
 	}
 
 	// Return a Promise
-	return new Promise(function (resolve) {
+	return new Promise(function (resolve, reject) {
+		if(err){
+			return reject(err);
+		}
+
 		resolve(_(self._data).findOne(query));
 	});
 };
@@ -100,7 +105,11 @@ Collection.prototype.insert = function (doc, options, callback) {
 		return insert.call(this, doc, options, callback);
 	}
 
-	return new Promise(function (resolve) {
+	return new Promise(function (resolve, reject) {
+		if(err){
+			return reject(err);
+		}
+
 		var counter = _(self._data).insert(doc);
 		self._restore();
 
@@ -134,7 +143,11 @@ Collection.prototype.update = function (query, modifier, options, callback) {
 		return update.call(this, query, modifier, options, callback);
 	}
 
-	return new Promise(function (resolve) {
+	return new Promise(function (resolve, reject) {
+		if(err){
+			return reject(err);
+		}
+
 		var counter = _(self._data).update(query, modifier, options);
 		self._restore();
 
@@ -163,7 +176,11 @@ Collection.prototype.remove = function (query, callback) {
 	this._restore();
 	callback();
 
-	return new Promise(function (resolve) {
+	return new Promise(function (resolve, reject) {
+		if(err){
+			return reject(err);
+		}
+
 		_(self._data).remove(query);
 		self._restore();
 
@@ -196,7 +213,11 @@ Collection.prototype.findAndModify = function (query, sort, modifier, options, c
 		return findAndModify.call(this, query, modifier, options, callback);
 	}
 
-	return new Promise(function (resolve) {
+	return new Promise(function (resolve, reject) {
+		if(err){
+			return reject(err);
+		}
+
 		var doc = _(self._data).findAndModify(query, modifier, options);
 		self._restore();
 
