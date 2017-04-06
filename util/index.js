@@ -310,6 +310,10 @@ function _allKeysValid(query, item) {
 
 
 	return Object.keys(query).every(function (key) {
+		if(Object.keys(query[key]).indexOf('_bsontype') >= 0) {
+			query[key] = query[key].toString();
+		}
+
 		if (logicalOperators[key]) {
 			return logicalOperators[key](item, query[key]);
 		}
@@ -411,8 +415,16 @@ Wrap.prototype.insert = function (doc) {
 	if (!doc._id || !doc._id instanceof ObjectID) {
 		doc._id = new bson.ObjectId();
 	}
+
+	var result = {
+		result: {ok: 1, n: 1},
+		ops: [doc],
+		insertedCount: 1,
+		insertedIds: [doc._id]
+	};
+
 	this._data.push(doc);
-	return doc;
+	return result;
 };
 
 Wrap.prototype.remove = function (query) {
