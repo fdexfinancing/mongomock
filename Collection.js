@@ -231,4 +231,35 @@ var findAndModify = function (query, modifier, options, callback) {
 	callback(null, doc);
 };
 
+Collection.prototype.findOneAndUpdate = function (query, modifier, options, callback) {
+	var self = this;
+
+	if ('function' === typeof options) {
+		callback = options, options = {};
+	}
+
+	if (options === null) {
+		options = {};
+	}
+
+	if (modifier.$set && modifier.$set._id) {
+		delete modifier.$set._id;
+	}
+
+	if(callback && typeof callback === 'function') {
+		return findAndModify.call(this, query, modifier, options, callback);
+	}
+
+	return new Promise(function (resolve, reject) {
+		if(err){
+			return reject(err);
+		}
+
+		var doc = _(self._data).findAndModify(query, modifier, options);
+		self._restore();
+
+		resolve(doc);
+	});
+};
+
 module.exports = Collection;
