@@ -100,8 +100,8 @@ var modifiers = {
 			var property = objectUtil.prop(key)(doc);
 			var modifierProperty = modifier[key];
 
-			if (!property instanceof Array) {
-				throw "property " + key + " is not array";
+			if (!property) {
+				property = [];
 			}
 
 			if (modifierProperty.$each && modifierProperty.$each instanceof Array) {
