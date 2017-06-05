@@ -246,7 +246,7 @@ var logicalOperators = {
 };
 //todo:wtf
 function areEqual(field1, field2) {
-	if (field1 instanceof ObjectID) {
+	if (field1 instanceof ObjectID || field2 instanceof ObjectID) {
 		return field1.toString() === field2.toString();
 	}
 
@@ -299,7 +299,7 @@ function _allKeysValid(query, item) {
 	}
 
 	function anyMatchOf(key, pathStep, item) {
-		return item[pathStep].some(function (subArrayItem) {
+		return item.some(function (subArrayItem) {
 			var subQueryKey = key.replace(new RegExp(pathStep + '\\.'), "");
 			var subQuery = {};
 			subQuery[subQueryKey] = query[key];
@@ -332,14 +332,16 @@ function _allKeysValid(query, item) {
 				var property = properties[i];
 				path.push(property);
 				var pathStep = path.join(".");
-				if (item[pathStep] instanceof Array) {
+				item = item[property]
+
+				if (item instanceof Array) {
 					var nextOperator = parseInt(properties[i + 1]);
 					if (!isNaN(nextOperator)) {
 
-						var subQueryKey = key.replace(new RegExp(pathStep + '\\.' + properties[i + 1] + '\\.'), "");
+						var subQueryKey = properties[i + 1];
 						var subQuery = {};
 						subQuery[subQueryKey] = query[key];
-						var subArrayItem = item[pathStep][properties[i + 1]];
+						var subArrayItem = item[nextOperator];
 
 						return _allKeysValid(subQuery, subArrayItem);
 					} else {
